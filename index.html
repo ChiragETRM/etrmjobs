@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ETRM & CTRM Jobs Radar | LearnETRM</title>
+
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+
+  <style>
+    :root { --maxw: 1200px; --muted:#667085; --border:#e5e7eb; --bg:#f7f7fb; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:0; color:#111; background: #fff; }
+    header { padding: 28px 16px; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, #fafaff, #fff); }
+    .wrap { max-width: var(--maxw); margin: 0 auto; }
+    h1 { font-size: 28px; margin: 0 0 6px; }
+    .sub { color: var(--muted); margin: 0; line-height: 1.4; }
+    .stats { display:flex; flex-wrap:wrap; gap:12px; margin-top: 16px; }
+    .stat { border: 1px solid var(--border); background:#fff; padding: 10px 12px; border-radius: 12px; min-width: 160px; }
+    .stat .k { font-size: 12px; color: var(--muted); }
+    .stat .v { font-size: 18px; font-weight: 650; margin-top: 2px; }
+    main { padding: 22px 16px 40px; background: var(--bg); }
+    .panel { background:#fff; border:1px solid var(--border); border-radius: 16px; padding: 16px; }
+    .filters { display:grid; grid-template-columns: repeat(5, minmax(140px, 1fr)); gap: 10px; margin: 12px 0 10px; }
+    .filters label { font-size: 12px; color: var(--muted); display:block; margin-bottom: 4px; }
+    select { width:100%; padding: 10px 10px; border: 1px solid var(--border); border-radius: 12px; background:#fff; }
+    .note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+    .cta { margin-top: 18px; padding: 16px; border-radius: 16px; border: 1px solid var(--border); background:#fff; display:flex; align-items:center; justify-content:space-between; gap: 12px; }
+    .cta strong { font-size: 16px; }
+    .cta p { margin: 4px 0 0; color: var(--muted); }
+    .btn { display:inline-block; padding: 10px 14px; border-radius: 12px; border: 1px solid #111; color:#111; text-decoration:none; font-weight:600; }
+    .btn:hover { opacity: 0.85; }
+    .table-wrap { margin-top: 10px; }
+    .pill { display:inline-block; padding: 3px 8px; border:1px solid var(--border); border-radius: 999px; font-size: 12px; color:#111; background:#fff; }
+    .muted { color: var(--muted); }
+    @media (max-width: 900px){
+      .filters { grid-template-columns: 1fr 1fr; }
+      .cta { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="wrap">
+    <h1>ETRM & CTRM Jobs Radar</h1>
+    <p class="sub">
+      A live snapshot of global <span class="pill">Energy Trading and Risk Management</span> and
+      <span class="pill">Commodity Trading and Risk Management</span> roles.
+    </p>
+
+    <div class="stats">
+      <div class="stat"><div class="k">Total jobs</div><div class="v" id="s_total">—</div></div>
+      <div class="stat"><div class="k">Countries</div><div class="v" id="s_countries">—</div></div>
+      <div class="stat"><div class="k">Remote share</div><div class="v" id="s_remote">—</div></div>
+      <div class="stat"><div class="k">Newest posting</div><div class="v" id="s_newest">—</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="panel">
+
+      <div class="filters">
+        <div>
+          <label for="f_country">Country</label>
+          <select id="f_country"><option value="">All</option></select>
+        </div>
+        <div>
+          <label for="f_track">Track</label>
+          <select id="f_track"><option value="">All</option></select>
+        </div>
+        <div>
+          <label for="f_level">Level</label>
+          <select id="f_level"><option value="">All</option></select>
+        </div>
+        <div>
+          <label for="f_remote">Remote</label>
+          <select id="f_remote">
+            <option value="">All</option>
+            <option value="true">Remote</option>
+            <option value="false">On-site / Hybrid</option>
+          </select>
+        </div>
+        <div>
+          <label for="f_type">Job Type</label>
+          <select id="f_type"><option value="">All</option></select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="jobsTable" class="display" style="width:100%">
+          <thead>
+            <tr>
+              <th>Posted</th>
+              <th>Title</th>
+              <th>Company</th>
+              <th>Location</th>
+              <th>Country</th>
+              <th>Track</th>
+              <th>Level</th>
+              <th>Remote</th>
+              <th>Type</th>
+              <th>Apply</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="note" id="updatedNote">Last updated: —</div>
+
+      <div class="cta">
+        <div>
+          <strong>Seeing skill gaps in real job descriptions?</strong>
+          <p>Our 2-day intensive LearnETRM workshop is designed around what the market actually asks for.</p>
+        </div>
+        <a class="btn" href="https://www.learnetrm.com/workshop">Register for the LearnETRM Workshop</a>
+      </div>
+
+      <p class="note">Listings can expire or change; always apply via the official link.</p>
+    </div>
+  </div>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<script>
+  // 🔧 Replace this with your published Google Sheet CSV URL
+  const CSV_URL = "PASTE_YOUR_PUBLISHED_GOOGLE_SHEET_CSV_URL_HERE";
+
+  const uniqSorted = (arr) => Array.from(new Set(arr.filter(Boolean))).sort((a,b)=> String(a).localeCompare(String(b)));
+  const fmtDate = (s) => {
+    if (!s) return "";
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) return s;
+    return d.toISOString().slice(0,10);
+  };
+  const toBoolText = (v) => {
+    const t = String(v).toLowerCase();
+    if (t === "true" || t === "yes" || t === "1") return "true";
+    if (t === "false" || t === "no" || t === "0") return "false";
+    return "";
+  };
+  function escapeRegex(text){ return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+  let table;
+
+  Papa.parse(CSV_URL, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      const rows = results.data || [];
+
+      // Normalize keys (tolerant to slight header variations)
+      const norm = (r) => ({
+        date_posted: r.date_posted || r.posted || r.date || "",
+        title: r.title || r.job_title || "",
+        company: r.company || "",
+        location: r.location || "",
+        country: r.country || r.country_used || "",
+        track: r.track || r.query_used || "",
+        level: r.level || r.job_level || "",
+        remote: r.remote || r.is_remote || "",
+        type: r.type || r.job_type || "",
+        apply_url: r.apply_url || r.job_url || r.job_url_direct || ""
+      });
+
+      const nrows = rows.map(norm);
+
+      const countries = uniqSorted(nrows.map(r => r.country));
+      const tracks = uniqSorted(nrows.map(r => r.track));
+      const levels = uniqSorted(nrows.map(r => r.level));
+      const types = uniqSorted(nrows.map(r => r.type));
+
+      const addOpts = (selId, values) => {
+        const sel = document.getElementById(selId);
+        values.forEach(v => {
+          const opt = document.createElement("option");
+          opt.value = v;
+          opt.textContent = v;
+          sel.appendChild(opt);
+        });
+      };
+      addOpts("f_country", countries);
+      addOpts("f_track", tracks);
+      addOpts("f_level", levels);
+      addOpts("f_type", types);
+
+      // Stats
+      const total = nrows.length;
+      const countryCount = countries.length;
+      const remoteCount = nrows.filter(r => toBoolText(r.remote) === "true").length;
+      const remotePct = total ? Math.round((remoteCount / total) * 100) : 0;
+
+      const dates = nrows.map(r => r.date_posted).filter(Boolean).map(d => new Date(d)).filter(d => !Number.isNaN(d.getTime()));
+      const newest = dates.length ? new Date(Math.max(...dates.map(d => d.getTime()))) : null;
+
+      document.getElementById("s_total").textContent = total.toLocaleString();
+      document.getElementById("s_countries").textContent = countryCount.toLocaleString();
+      document.getElementById("s_remote").textContent = `${remotePct}%`;
+      document.getElementById("s_newest").textContent = newest ? newest.toISOString().slice(0,10) : "—";
+      document.getElementById("updatedNote").textContent = `Last updated: ${newest ? newest.toISOString().slice(0,10) : "—"}`;
+
+      const dataSet = nrows.map(r => {
+        const applyUrl = r.apply_url || "";
+        const applyHtml = applyUrl
+          ? `<a href="${applyUrl}" target="_blank" rel="noopener noreferrer">Apply</a>`
+          : `<span class="muted">—</span>`;
+        return [
+          fmtDate(r.date_posted),
+          r.title,
+          r.company,
+          r.location,
+          r.country,
+          r.track,
+          r.level,
+          toBoolText(r.remote),
+          r.type,
+          applyHtml
+        ];
+      });
+
+      table = $("#jobsTable").DataTable({
+        data: dataSet,
+        pageLength: 25,
+        order: [[0, "desc"]],
+        columns: [
+          { title: "Posted" },
+          { title: "Title" },
+          { title: "Company" },
+          { title: "Location" },
+          { title: "Country" },
+          { title: "Track" },
+          { title: "Level" },
+          { title: "Remote" },
+          { title: "Type" },
+          { title: "Apply", orderable: false, searchable: false }
+        ]
+      });
+
+      const hookSelectFilter = (selectId, colIndex) => {
+        document.getElementById(selectId).addEventListener("change", (e) => {
+          const val = e.target.value;
+          table.column(colIndex).search(val ? `^${escapeRegex(val)}$` : "", true, false).draw();
+        });
+      };
+      hookSelectFilter("f_country", 4);
+      hookSelectFilter("f_track", 5);
+      hookSelectFilter("f_level", 6);
+      hookSelectFilter("f_remote", 7);
+      hookSelectFilter("f_type", 8);
+    },
+    error: function(err) {
+      console.error("CSV load error:", err);
+      document.getElementById("updatedNote").textContent =
+        "Could not load jobs data. Check CSV_URL and that the sheet is published as CSV.";
+    }
+  });
+</script>
+</body>
+</html>
