@@ -26,7 +26,6 @@
     .note { font-size: 12px; color: var(--muted); margin-top: 10px; }
     .cta { margin-top: 18px; padding: 16px; border-radius: 16px; border: 1px solid var(--border); background:#fff; display:flex; align-items:center; justify-content:space-between; gap: 12px; }
     .cta strong { font-size: 16px; }
-    .cta p { margin: 4px 0 0; color: var(--muted); }
     .btn { display:inline-block; padding: 10px 14px; border-radius: 12px; border: 1px solid #111; color:#111; text-decoration:none; font-weight:600; }
     .btn:hover { opacity: 0.85; }
     .table-wrap { margin-top: 10px; }
@@ -111,11 +110,8 @@
       <div class="note" id="updatedNote">Last updated: —</div>
 
       <div class="cta">
-        <div>
-          <strong>Seeing skill gaps in real job descriptions?</strong>
-          <p>Our 2-day intensive LearnETRM workshop is designed around what the market actually asks for.</p>
-        </div>
-        <a class="btn" href="https://www.learnetrm.com/workshop">Register for the LearnETRM Workshop</a>
+        <strong>Want the best chance to crack the above jobs? Register for our 2 day intensive ETRM workshop</strong>
+        <a class="btn" href="https://learnetrm.com/download-brochure">Register for the LearnETRM Workshop</a>
       </div>
 
       <p class="note">Listings can expire or change; always apply via the official link.</p>
@@ -128,22 +124,28 @@
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <script>
-  // 🔧 Replace this with your published Google Sheet CSV URL
   const CSV_URL = "./jobs_etrm_ctrm_20251217_140729Z.csv";
 
   const uniqSorted = (arr) => Array.from(new Set(arr.filter(Boolean))).sort((a,b)=> String(a).localeCompare(String(b)));
-  const fmtDate = (s) => {
+
+  // Format: DD-MMM-YY (e.g., 17-Dec-25)
+  const fmtDateDDMMMYY = (s) => {
     if (!s) return "";
     const d = new Date(s);
     if (Number.isNaN(d.getTime())) return s;
-    return d.toISOString().slice(0,10);
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mmm = d.toLocaleString("en-GB", { month: "short" }); // Jan, Feb, ...
+    const yy = String(d.getFullYear()).slice(-2);
+    return `${dd}-${mmm}-${yy}`;
   };
+
   const toBoolText = (v) => {
     const t = String(v).toLowerCase();
     if (t === "true" || t === "yes" || t === "1") return "true";
     if (t === "false" || t === "no" || t === "0") return "false";
     return "";
   };
+
   function escapeRegex(text){ return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
   let table;
@@ -155,7 +157,6 @@
     complete: function(results) {
       const rows = results.data || [];
 
-      // Normalize keys (tolerant to slight header variations)
       const norm = (r) => ({
         date_posted: r.date_posted || r.posted || r.date || "",
         title: r.title || r.job_title || "",
@@ -185,6 +186,7 @@
           sel.appendChild(opt);
         });
       };
+
       addOpts("f_country", countries);
       addOpts("f_track", tracks);
       addOpts("f_level", levels);
@@ -202,16 +204,17 @@
       document.getElementById("s_total").textContent = total.toLocaleString();
       document.getElementById("s_countries").textContent = countryCount.toLocaleString();
       document.getElementById("s_remote").textContent = `${remotePct}%`;
-      document.getElementById("s_newest").textContent = newest ? newest.toISOString().slice(0,10) : "—";
-      document.getElementById("updatedNote").textContent = `Last updated: ${newest ? newest.toISOString().slice(0,10) : "—"}`;
+      document.getElementById("s_newest").textContent = newest ? fmtDateDDMMMYY(newest.toISOString()) : "—";
+      document.getElementById("updatedNote").textContent = `Last updated: ${newest ? fmtDateDDMMMYY(newest.toISOString()) : "—"}`;
 
       const dataSet = nrows.map(r => {
         const applyUrl = r.apply_url || "";
         const applyHtml = applyUrl
           ? `<a href="${applyUrl}" target="_blank" rel="noopener noreferrer">Apply</a>`
           : `<span class="muted">—</span>`;
+
         return [
-          fmtDate(r.date_posted),
+          fmtDateDDMMMYY(r.date_posted),
           r.title,
           r.company,
           r.location,
@@ -226,7 +229,7 @@
 
       table = $("#jobsTable").DataTable({
         data: dataSet,
-        pageLength: 25,
+        pageLength: 20,                 // ✅ max 20 listings per page
         order: [[0, "desc"]],
         columns: [
           { title: "Posted" },
@@ -248,6 +251,7 @@
           table.column(colIndex).search(val ? `^${escapeRegex(val)}$` : "", true, false).draw();
         });
       };
+
       hookSelectFilter("f_country", 4);
       hookSelectFilter("f_track", 5);
       hookSelectFilter("f_level", 6);
@@ -257,7 +261,7 @@
     error: function(err) {
       console.error("CSV load error:", err);
       document.getElementById("updatedNote").textContent =
-        "Could not load jobs data. Check CSV_URL and that the sheet is published as CSV.";
+        "Could not load jobs data. Check CSV_URL and that the CSV file exists in the same folder as index.html.";
     }
   });
 </script>
